@@ -10,6 +10,9 @@ import os
 
 from sklearn.ensemble import RandomForestRegressor
 
+import json
+from datetime import datetime
+
 
 BASE_DIR = os.environ.get('BASE_DIR', os.path.dirname(os.path.abspath(__file__)))
 MODELS_DIR = os.path.join(BASE_DIR, 'models')
@@ -73,3 +76,21 @@ print(f"v0.2 model has been saved to: {MODEL_V02_SAVE_PATH}")
 print("\n--- Training Summary ---")
 print(f"v0.1 (LinearRegression) RMSE: {rmse_v01}")
 print(f"v0.2 (RandomForest) RMSE: {rmse_v02}")
+
+metrics = {
+    "v01": {
+        "model": "LinearRegression",
+        "rmse": float(rmse_v01)
+    },
+    "v02": {
+        "model": "RandomForestRegressor", 
+        "rmse": float(rmse_v02)
+    },
+    "timestamp": datetime.now().isoformat(),
+    "dataset": "sklearn.diabetes"
+}
+
+with open("metrics.json", "w") as f:
+    json.dump(metrics, f, indent=2)
+
+print(f"\nMetrics saved to metrics.json")
