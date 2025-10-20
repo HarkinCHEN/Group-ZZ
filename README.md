@@ -44,9 +44,9 @@ Checks the service health and model version.
 ```bash
 curl http://localhost:9696/health
 
-#Response:
+**Response:**
 
-#JSON
+```JSON
 
 {
   "model_version": "0.2",
@@ -57,14 +57,14 @@ Sends patient data to get a risk score prediction.
 
 #Example Request:
 
-Bash
+```Bash
 
 curl -X POST http://localhost:9696/predict \
      -H "Content-Type: application/json" \
      -d '{ "age": 0.02, "sex": -0.044, "bmi": 0.06, "bp": -0.03, "s1": -0.02, "s2": 0.03, "s3": -0.02, "s4": 0.02, "s5": 0.02, "s6": -0.001 }'
 #Response:
 
-JSON
+```JSON
 
 {
   "prediction": 156.4... 

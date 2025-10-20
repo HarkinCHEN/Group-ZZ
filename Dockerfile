@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM mcr.microsoft.com/devcontainers/python:3.9
+FROM python:3.9-slim-bullseye
 
 # Set the working directory in the container
 WORKDIR /app
@@ -26,7 +26,4 @@ EXPOSE 9696
 HEALTHCHECK --interval=30s --timeout=3s \
   CMD curl -f http://localhost:9696/health || exit 1
 
-CMD ["gunicorn", "--bind", "0.0.0.0:9696", "app:app"]
-
-# run the application
 CMD ["gunicorn", "--bind", "0.0.0.0:9696", "app:app"]

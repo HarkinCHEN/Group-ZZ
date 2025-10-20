@@ -1,0 +1,12 @@
+{
+  "v01": {
+    "model": "LinearRegression",
+    "rmse": 53.85344583676594
+  },
+  "v02": {
+    "model": "RandomForestRegressor",
+    "rmse": 54.398350726816645
+  },
+  "timestamp": "2025-10-20T13:10:25.536505",
+  "dataset": "sklearn.diabetes"
+}
