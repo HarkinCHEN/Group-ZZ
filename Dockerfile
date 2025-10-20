@@ -12,8 +12,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 #copy the rest of the application code
 COPY app.py .
+COPY train.py .
 
-COPY models/model_v02.joblib ./models/
+RUN mkdir -p models && python train.py
 
 ENV BASE_DIR /app
  
