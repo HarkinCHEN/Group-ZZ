@@ -7,6 +7,21 @@ This is an MLOps assignment to build a service that predicts disease progression
 - **RMSE**: 54.398350726816645
 - **Model Version**: `v0.2`
 
+## Quick Start
+
+### Pull from GitHub Container Registry (Recommended)
+```bash
+docker pull ghcr.io/firrrdragon/group-zz:0.21
+docker run -d -p 9696:9696 ghcr.io/firrrdragon/group-zz:0.21
+```
+
+### Build Locally
+```bash
+docker build -t diabetes-service:v0.2 .
+docker run -d -p 9696:9696 diabetes-service:v0.2
+```
+
+
 ## How to Run (using Docker)
 
 This project is containerized with Docker, and the model is baked into the image.

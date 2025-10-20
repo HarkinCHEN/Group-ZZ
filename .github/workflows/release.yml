@@ -1,0 +1,130 @@
+name: Release Pipeline
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: firrrdragon/group-zz
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Train model
+        run: |
+          mkdir -p models
+          python train.py > training_output.txt
+          cat training_output.txt
+      
+      - name: Extract metrics from training output
+        id: metrics
+        run: |
+          V01_RMSE=$(grep "v0.1 (LinearRegression) RMSE:" training_output.txt | awk '{print $NF}')
+          V02_RMSE=$(grep "v0.2 (RandomForest) RMSE:" training_output.txt | awk '{print $NF}')
+          echo "V01_RMSE=$V01_RMSE" >> $GITHUB_OUTPUT
+          echo "V02_RMSE=$V02_RMSE" >> $GITHUB_OUTPUT
+      
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.VERSION }} .
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.VERSION }} \
+                     ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+      
+      - name: Push Docker image to GHCR
+        run: |
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.VERSION }}
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+      
+      - name: Container smoke test
+        run: |
+          docker run -d -p 9696:9696 --name release_test \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.VERSION }}
+          sleep 5
+          curl -f http://localhost:9696/health
+          curl -f -X POST http://localhost:9696/predict \
+            -H "Content-Type: application/json" \
+            -d '{"age": 0.02, "sex": -0.044, "bmi": 0.06, "bp": -0.03, "s1": -0.02, "s2": 0.03, "s3": -0.02, "s4": 0.02, "s5": 0.02, "s6": -0.001}'
+          docker stop release_test
+      
+      - name: Create Release Notes
+        run: |
+          cat > release_notes.md << EOF
+          # Release ${{ github.ref_name }}
+          
+
+          
+          | Version | Model | RMSE |
+          |---------|-------|------|
+          | v0.1 | LinearRegression | ${{ steps.metrics.outputs.V01_RMSE }} |
+          | v0.2 | RandomForestRegressor | ${{ steps.metrics.outputs.V02_RMSE }} |
+
+          
+          Pull the image:
+          \`\`\`bash
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.VERSION }}
+          \`\`\`
+          
+          Run the container:
+          \`\`\`bash
+          docker run -d -p 9696:9696 ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.VERSION }}
+          \`\`\`
+          
+          
+          Health check:
+          \`\`\`bash
+          curl http://localhost:9696/health
+          \`\`\`
+          
+          Prediction:
+          \`\`\`bash
+          curl -X POST http://localhost:9696/predict \\
+            -H "Content-Type: application/json" \\
+            -d '{"age": 0.02, "sex": -0.044, "bmi": 0.06, "bp": -0.03, "s1": -0.02, "s2": 0.03, "s3": -0.02, "s4": 0.02, "s5": 0.02, "s6": -0.001}'
+          \`\`\`
+          
+          
+          See [CHANGELOG.md](./CHANGELOG.md) for detailed changes.
+          EOF
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: release_notes.md
+          files: |
+            CHANGELOG.md
+            training_output.txt
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
