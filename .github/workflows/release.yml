@@ -7,7 +7,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: firrrdragon/group-zz
 
 jobs:
   build-and-release:
@@ -78,25 +78,43 @@ jobs:
           docker stop release_test
       
       - name: Create Release Notes
-        id: release_notes
         run: |
           cat > release_notes.md << EOF
           # Release ${{ github.ref_name }}
           
+
           
           | Version | Model | RMSE |
           |---------|-------|------|
           | v0.1 | LinearRegression | ${{ steps.metrics.outputs.V01_RMSE }} |
           | v0.2 | RandomForestRegressor | ${{ steps.metrics.outputs.V02_RMSE }} |
+
           
-          
+          Pull the image:
           \`\`\`bash
           docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.VERSION }}
+          \`\`\`
+          
+          Run the container:
+          \`\`\`bash
           docker run -d -p 9696:9696 ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.VERSION }}
           \`\`\`
           
           
-          See [CHANGELOG.md](./CHANGELOG.md) for details.
+          Health check:
+          \`\`\`bash
+          curl http://localhost:9696/health
+          \`\`\`
+          
+          Prediction:
+          \`\`\`bash
+          curl -X POST http://localhost:9696/predict \\
+            -H "Content-Type: application/json" \\
+            -d '{"age": 0.02, "sex": -0.044, "bmi": 0.06, "bp": -0.03, "s1": -0.02, "s2": 0.03, "s3": -0.02, "s4": 0.02, "s5": 0.02, "s6": -0.001}'
+          \`\`\`
+          
+          
+          See [CHANGELOG.md](./CHANGELOG.md) for detailed changes.
           EOF
       
       - name: Create GitHub Release
