@@ -7,7 +7,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: firrrdragon/group-zz
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build-and-release:
