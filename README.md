@@ -1,13 +1,3 @@
-v0.2.1 - RandomForest，RMSE: 54.40
-
-v0.1 - LinearRegression，RMSE: 53.85
-
-
-docker pull ghcr.io/firrrdragon/group-zz:0.21
-
-
-docker run -d -p 9696:9696 ghcr.io/firrrdragon/group-zz:0.21
-
 # Virtual Diabetes Clinic - Risk Prediction Service (Group-ZZ)
 
 This is an MLOps assignment to build a service that predicts disease progression risk for diabetic patients.
@@ -16,6 +6,21 @@ This is an MLOps assignment to build a service that predicts disease progression
 - **Model**: `StandardScaler` + `RandomForestRegressor`
 - **RMSE**: 54.398350726816645
 - **Model Version**: `v0.2`
+
+## Quick Start
+
+### Pull from GitHub Container Registry (Recommended)
+```bash
+docker pull ghcr.io/firrrdragon/group-zz:0.21
+docker run -d -p 9696:9696 ghcr.io/firrrdragon/group-zz:0.21
+```
+
+### Build Locally
+```bash
+docker build -t diabetes-service:v0.2 .
+docker run -d -p 9696:9696 diabetes-service:v0.2
+```
+
 
 ## How to Run (using Docker)
 
