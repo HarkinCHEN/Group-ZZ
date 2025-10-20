@@ -1,5 +1,5 @@
 v0.2.1 - RandomForest，RMSE: 54.40
-v0.1 - LinearRegression，RMSE: 53.85 (baseline 反而更好)
+v0.1 - LinearRegression，RMSE: 53.85
 
 
 docker pull ghcr.io/firrrdragon/group-zz:0.21
