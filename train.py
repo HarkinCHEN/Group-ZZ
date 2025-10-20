@@ -10,9 +10,9 @@ import os
 
 from sklearn.ensemble import RandomForestRegressor
 
-
-BASE_DIR = "/Users/hk/Desktop/Group-ZZ" 
+BASE_DIR = os.environ.get('BASE_DIR', os.path.dirname(os.path.abspath(__file__)))
 MODELS_DIR = os.path.join(BASE_DIR, 'models')
+
 
 # make sure models directory exists
 os.makedirs(MODELS_DIR, exist_ok=True)
